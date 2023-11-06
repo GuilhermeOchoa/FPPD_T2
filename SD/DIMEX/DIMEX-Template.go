@@ -145,23 +145,19 @@ func (module *DIMEX_Module) handleUponReqEntry() {
 
 	// Aumenta o carimbo de tempo local
 	module.lcl++
-
-	// Define o carimbo de tempo local da última solicitação deste processo
+	// Define o time stamp local da última solicitação deste processo
 	module.reqTs = module.lcl
-
 	// Inicializa o contador de respostas
 	module.nbrResps = 0
-
 	// Para cada processo p
 	for i, addr := range module.addresses {
 		if i == module.id {
+			//module.outDbg("Não envia para si mesmo: " + addr)
 			continue // Não envie solicitação para si mesmo
 		}
-
 		// Envia uma mensagem [reqEntry, r, myTs] para o processo p
-		message := fmt.Sprintf("[reqEntry, %d, %d]", module.id, module.reqTs)
-		module.sendToLink(addr, message, "Entry Request")
-
+		message := fmt.Sprintf("reqEntry, %d, %d", module.id, module.reqTs)
+		module.sendToLink(addr, message, "reqEntry")
 		// Atualiza o estado para "wantMX" (quer a exclusão mútua)
 		module.st = wantMX
 	}
@@ -178,7 +174,8 @@ func (module *DIMEX_Module) handleUponReqExit() {
 	for i := 0; i < len(module.waiting); i++ {
 		if module.waiting[i] {
 			// Envia uma mensagem [respOk, r] para o processo i
-			message := fmt.Sprintf("[respOk, %d]", module.id)
+			message := fmt.Sprintf("respOK, %d", module.id)
+			//message := fmt.Sprintf("respOK")
 			module.sendToLink(module.addresses[i], message, "Exit Response")
 		}
 	}
@@ -208,17 +205,16 @@ func (module *DIMEX_Module) handleUponDeliverRespOk(msgOutro PP2PLink.PP2PLink_I
 		  					    estado := estouNaSC
 
 	*/
-
+	module.outDbg(msgOutro.Message)
+	module.outDbg("entrou no handleUponDeliverRespOk")
 	module.nbrResps++
 
-	// Se o número de respostas recebidas for igual ao número de processos (N), então é seguro entrar na seção crítica
 	if module.nbrResps == len(module.addresses) {
-		// Dispara um evento de entrega para a aplicação indicando que pode acessar a seção crítica
 		module.Ind <- dmxResp{}
-
-		// Atualiza o estado para "inMX" (está na exclusão mútua)
 		module.st = inMX
+		//module.nbrResps = 0
 	}
+
 }
 
 func (module *DIMEX_Module) handleUponDeliverReqEntry(msgOutro PP2PLink.PP2PLink_Ind_Message) {
@@ -234,25 +230,26 @@ func (module *DIMEX_Module) handleUponDeliverReqEntry(msgOutro PP2PLink.PP2PLink
 		        				então  postergados := postergados + [p, r ]
 		     					lts.ts := max(lts.ts, rts.ts)
 	*/
-
-	var p, r, ts int
-	// Extrai os valores do conteúdo da mensagem
-	_, err := fmt.Sscanf(msgOutro.Message, "[reqEntry, %d, %d, %d]", &p, &r, &ts)
+	//module.outDbg(msgOutro.Message)
+	var p, ts int
+	_, err := fmt.Sscanf(msgOutro.Message, "reqEntry, %d, %d", &p, &ts)
 	if err != nil {
+		module.outDbg("Erro ao extrair valores da mensagem")
 		// Manipule o erro conforme necessário
 		return
 	}
-
-	// Se o estado é "noMX" ou "wantMX" e o carimbo de tempo e o identificador deste processo são maiores do que os da mensagem,
-	// envie uma mensagem [respOk, r] de volta para o processo que fez a solicitação
-	if (module.st == noMX || module.st == wantMX) && before(module.id, module.reqTs, p, ts) {
-		//if module.st == noMX {//|| (module.st == wantMX && (module.reqTs, module.id) > (ts,p)) {
-		message := fmt.Sprintf("[respOk, %d]", module.id)
+	module.outDbg(fmt.Sprintf("p: %d, ts: %d", p, ts))
+	module.outDbg(fmt.Sprintf("module.st: %d, module.reqTs: %d", module.st, module.reqTs))
+	//if module.st == noMX || (module.st == wantMX && (module.reqTs > ts || (module.reqTs == ts && module.id > p))) {
+	if module.st == noMX || (module.st == wantMX && (module.reqTs > ts)) {
+		message := fmt.Sprintf("respOk, %d", module.id)
 		module.sendToLink(module.addresses[p], message, "Request Entry Response")
 	} else {
-		// Caso contrário, adicione o processo à lista de processos em espera
+		module.outDbg("Adicionando processo na lista de espera" + msgOutro.Message)
 		module.waiting[p] = true
+		module.outDbg(fmt.Sprintf("module.waiting: %v", module.waiting))
 		module.lcl = max(module.lcl, ts)
+		module.outDbg(fmt.Sprintf("module.lcl: %d", module.lcl))
 	}
 }
 
