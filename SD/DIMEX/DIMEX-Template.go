@@ -207,12 +207,11 @@ func (module *DIMEX_Module) handleUponDeliverRespOk(msgOutro PP2PLink.PP2PLink_I
 	*/
 	module.outDbg(msgOutro.Message)
 	module.outDbg("entrou no handleUponDeliverRespOk")
-	module.nbrResps++
 
-	if module.nbrResps == len(module.addresses) {
+	module.nbrResps++
+	if module.nbrResps == len(module.addresses)-1 {
 		module.Ind <- dmxResp{}
 		module.st = inMX
-		//module.nbrResps = 0
 	}
 
 }
@@ -240,11 +239,11 @@ func (module *DIMEX_Module) handleUponDeliverReqEntry(msgOutro PP2PLink.PP2PLink
 	}
 	module.outDbg(fmt.Sprintf("p: %d, ts: %d", p, ts))
 	module.outDbg(fmt.Sprintf("module.st: %d, module.reqTs: %d", module.st, module.reqTs))
-	//if module.st == noMX || (module.st == wantMX && (module.reqTs > ts || (module.reqTs == ts && module.id > p))) {
-	if module.st == noMX || (module.st == wantMX && (module.reqTs > ts)) {
+	if module.st == noMX || (module.st == wantMX && (module.reqTs > ts || (module.reqTs == ts && module.id > p))) {
 		message := fmt.Sprintf("respOk, %d", module.id)
 		module.sendToLink(module.addresses[p], message, "Request Entry Response")
 	} else {
+
 		module.outDbg("Adicionando processo na lista de espera" + msgOutro.Message)
 		module.waiting[p] = true
 		module.outDbg(fmt.Sprintf("module.waiting: %v", module.waiting))

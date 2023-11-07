@@ -72,7 +72,7 @@ func main() {
 		fmt.Println("[ APP id: ", id, " ESPERA MX ]")
 		// ESPERA LIBERACAO DO MODULO DIMEX
 		<-dmx.Ind //
-		fmt.Println("[ APP id: ", id, " RECEBEU LIBERACAO MX ]")
+		fmt.Println("[ APP id: ", id, " RECEBE MX ]")
 		// A PARTIR DAQUI ESTA ACESSANDO O ARQUIVO SOZINHO
 		_, err = file.WriteString("|") // marca entrada no arquivo
 		if err != nil {
