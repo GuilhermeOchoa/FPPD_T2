@@ -245,9 +245,9 @@ func (module *DIMEX_Module) handleUponDeliverReqEntry(msgOutro PP2PLink.PP2PLink
 		module.sendToLink(module.addresses[p], message, "Request Entry Response")
 	} else {
 		//if module.st == inMX || (module.st == wantMX && before(p, ts, module.id, module.reqTs)) {
-		module.outDbg("Adicionando processo na lista de espera: " + msgOutro.Message)
+		//module.outDbg("Adicionando processo na lista de espera: " + msgOutro.Message)
 		module.waiting[p] = true
-		module.outDbg(fmt.Sprintf("module.waiting: %v", module.waiting))
+		//module.outDbg(fmt.Sprintf("module.waiting: %v", module.waiting))
 		module.lcl = max(module.lcl, ts)
 		//module.outDbg(fmt.Sprintf("module.lcl: %d", module.lcl))
 	}

@@ -55,7 +55,7 @@ func main() {
 	//fmt.Println(dmx)
 
 	// abre arquivo que TODOS processos devem poder usar
-	file, err := os.OpenFile("./mxOUT.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("./mxOUT2.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -63,7 +63,7 @@ func main() {
 	defer file.Close() // Ensure the file is closed at the end of the function
 
 	// espera para facilitar inicializacao de todos processos (a mao)
-	time.Sleep(5 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	for {
 		// SOLICITA ACESSO AO DIMEX
@@ -72,7 +72,6 @@ func main() {
 		fmt.Println("[ APP id: ", id, " ESPERA MX ]")
 		// ESPERA LIBERACAO DO MODULO DIMEX
 		<-dmx.Ind //
-		fmt.Println("[ APP id: ", id, " RECEBE MX ]")
 		// A PARTIR DAQUI ESTA ACESSANDO O ARQUIVO SOZINHO
 		_, err = file.WriteString("|") // marca entrada no arquivo
 		if err != nil {
