@@ -207,7 +207,7 @@ func (module *DIMEX_Module) handleUponDeliverRespOk(msgOutro PP2PLink.PP2PLink_I
 	*/
 	module.outDbg(msgOutro.Message)
 	module.outDbg("entrou no handleUponDeliverRespOk")
-
+	//atualiza o contador de respostas
 	module.nbrResps++
 	if module.nbrResps == len(module.addresses)-1 {
 		module.Ind <- dmxResp{}
