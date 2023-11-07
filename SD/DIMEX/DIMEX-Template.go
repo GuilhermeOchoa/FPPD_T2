@@ -157,7 +157,7 @@ func (module *DIMEX_Module) handleUponReqEntry() {
 		}
 		// Envia uma mensagem [reqEntry, r, myTs] para o processo p
 		message := fmt.Sprintf("reqEntry, %d, %d", module.id, module.reqTs)
-		module.sendToLink(addr, message, "reqEntry")
+		module.sendToLink(addr, message, "Request Entry")
 		// Atualiza o estado para "wantMX" (quer a exclusão mútua)
 		module.st = wantMX
 	}
@@ -205,8 +205,8 @@ func (module *DIMEX_Module) handleUponDeliverRespOk(msgOutro PP2PLink.PP2PLink_I
 		  					    estado := estouNaSC
 
 	*/
-	module.outDbg(msgOutro.Message)
-	module.outDbg("entrou no handleUponDeliverRespOk")
+	//module.outDbg(msgOutro.Message)
+	//module.outDbg("entrou no handleUponDeliverRespOk")
 	//atualiza o contador de respostas
 	module.nbrResps++
 	if module.nbrResps == len(module.addresses)-1 {
@@ -233,22 +233,23 @@ func (module *DIMEX_Module) handleUponDeliverReqEntry(msgOutro PP2PLink.PP2PLink
 	var p, ts int
 	_, err := fmt.Sscanf(msgOutro.Message, "reqEntry, %d, %d", &p, &ts)
 	if err != nil {
-		module.outDbg("Erro ao extrair valores da mensagem")
 		// Manipule o erro conforme necessário
 		return
 	}
-	module.outDbg(fmt.Sprintf("p: %d, ts: %d", p, ts))
-	module.outDbg(fmt.Sprintf("module.st: %d, module.reqTs: %d", module.st, module.reqTs))
-	if module.st == noMX || (module.st == wantMX && (module.reqTs > ts || (module.reqTs == ts && module.id > p))) {
+	//module.outDbg(fmt.Sprintf("p: %d, ts: %d", p, ts))
+	//module.outDbg(fmt.Sprintf("module.st: %d, module.reqTs: %d", module.st, module.reqTs))
+	//
+	//if module.st == noMX || (module.st == wantMX && (module.reqTs > ts || (module.reqTs == ts && module.id > p))) {
+	if (module.st == noMX) || (module.st == wantMX && before(module.id, module.reqTs, p, ts)) {
 		message := fmt.Sprintf("respOK, %d", module.id)
 		module.sendToLink(module.addresses[p], message, "Request Entry Response")
 	} else {
-
-		module.outDbg("Adicionando processo na lista de espera" + msgOutro.Message)
+		//if module.st == inMX || (module.st == wantMX && before(p, ts, module.id, module.reqTs)) {
+		module.outDbg("Adicionando processo na lista de espera: " + msgOutro.Message)
 		module.waiting[p] = true
 		module.outDbg(fmt.Sprintf("module.waiting: %v", module.waiting))
 		module.lcl = max(module.lcl, ts)
-		module.outDbg(fmt.Sprintf("module.lcl: %d", module.lcl))
+		//module.outDbg(fmt.Sprintf("module.lcl: %d", module.lcl))
 	}
 }
 
