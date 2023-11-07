@@ -240,7 +240,7 @@ func (module *DIMEX_Module) handleUponDeliverReqEntry(msgOutro PP2PLink.PP2PLink
 	module.outDbg(fmt.Sprintf("p: %d, ts: %d", p, ts))
 	module.outDbg(fmt.Sprintf("module.st: %d, module.reqTs: %d", module.st, module.reqTs))
 	if module.st == noMX || (module.st == wantMX && (module.reqTs > ts || (module.reqTs == ts && module.id > p))) {
-		message := fmt.Sprintf("respOk, %d", module.id)
+		message := fmt.Sprintf("respOK, %d", module.id)
 		module.sendToLink(module.addresses[p], message, "Request Entry Response")
 	} else {
 
