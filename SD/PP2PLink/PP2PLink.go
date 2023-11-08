@@ -23,16 +23,19 @@ import (
 	"strconv"
 )
 
+// Representa uma mensagem de requisição que será enviada para outro processo.
 type PP2PLink_Req_Message struct {
 	To      string
 	Message string
 }
 
+// Representa uma mensagem indicativa recebida de outro processo.
 type PP2PLink_Ind_Message struct {
 	From    string
 	Message string
 }
 
+// A estrutura principal que mantém canais para mensagens de requisição e indicação, um booleano para controle de execução, um modo de depuração, e um cache de conexões TCP.
 type PP2PLink struct {
 	Ind   chan PP2PLink_Ind_Message
 	Req   chan PP2PLink_Req_Message
@@ -41,6 +44,7 @@ type PP2PLink struct {
 	Cache map[string]net.Conn // cache de conexoes - reaproveita conexao com destino ao inves de abrir outra
 }
 
+// Cria uma nova instância de PP2PLink, inicializa os canais e o cache de conexões, e inicia os processos de escuta e envio de mensagens.
 func NewPP2PLink(_address string, _dbg bool) *PP2PLink {
 	p2p := &PP2PLink{
 		Req:   make(chan PP2PLink_Req_Message, 1),
@@ -59,11 +63,13 @@ func (module *PP2PLink) outDbg(s string) {
 	}
 }
 
+// O programa começa criando um ouvinte TCP com net.Listen("tcp4", address), que permite que o servidor aceite conexões de entrada no endereço de rede especificado (variável address).
 func (module *PP2PLink) Start(address string) {
 
 	// PROCESSO PARA RECEBIMENTO DE MENSAGENS
 	go func() {
 		listen, _ := net.Listen("tcp4", address)
+		// Aguarda por novas conexões usando listen.Accept(). Para cada nova conexão, o código inicia uma goroutine usando go func() { ... }() para tratar essa conexão específica.
 		for {
 			// aceita repetidamente tentativas novas de conexao
 			conn, err := listen.Accept()
@@ -83,6 +89,7 @@ func (module *PP2PLink) Start(address string) {
 						module.outDbg("erro : " + err.Error() + " conexao fechada pelo outro processo.")
 						break
 					}
+					// O tamanho da mensagem é convertido de uma sequência de bytes para um inteiro usando strconv.Atoi.
 					tam, err := strconv.Atoi(string(bufTam))
 					bufMsg := make([]byte, tam)        // declara buffer do tamanho exato
 					_, err = io.ReadFull(conn, bufMsg) // le do tamanho do buffer ou da erro
@@ -101,6 +108,7 @@ func (module *PP2PLink) Start(address string) {
 	}()
 
 	// PROCESSO PARA ENVIO DE MENSAGENS
+	// O programa aguarda mensagens a serem enviadas no canal Req com message := <-module.Req.
 	go func() {
 		for {
 			message := <-module.Req
@@ -109,6 +117,7 @@ func (module *PP2PLink) Start(address string) {
 	}()
 }
 
+// O código verifica se já existe uma conexão aberta com o destinatário (message.To) no cache module.Cache. Se não existir, ele cria uma nova conexão usando net.Dial("tcp", message.To) e a armazena no cache.
 func (module *PP2PLink) Send(message PP2PLink_Req_Message) {
 	var conn net.Conn
 	var ok bool
