@@ -215,6 +215,8 @@ func (module *DIMEX_Module) handleUponDeliverRespOk(msgOutro PP2PLink.PP2PLink_I
 	//module.outDbg(msgOutro.Message)
 	//module.outDbg("entrou no handleUponDeliverRespOk")
 	//atualiza o contador de respostas
+	// se o número de respostas for igual ao número de processos-1, envia uma resposta para camada de aplicação, pelo canal Ind, liberando o acesso a seção crítica
+	// atualiza o estado do módulo para esta na seção crítica
 	module.nbrResps++
 	if module.nbrResps == len(module.addresses)-1 {
 		module.Ind <- dmxResp{}
