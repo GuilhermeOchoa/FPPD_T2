@@ -193,8 +193,7 @@ func (module *DIMEX_Module) handleUponDeliverRespOk(msgOutro PP2PLink.PP2PLink_I
 		  					    estado := estouNaSC
 
 	*/
-// master
-=======
+
 	//module.outDbg(msgOutro.Message)
 	//module.outDbg("entrou no handleUponDeliverRespOk")
 	//atualiza o contador de respostas
