@@ -14,18 +14,16 @@
 package main
 
 import (
-	"SD/DIMEX" // Importa o pacote DIMEX que contém a implementação do protocolo de exclusão mútua.
-	"fmt"      // Importa o pacote fmt para realizar operações de I/O formatadas, como imprimir na tela.
-	"os"       // Importa o pacote fmt para realizar operações de I/O formatadas, como imprimir na tela.
-	"strconv"  // Importa o pacote strconv para converter strings para outros tipos de dados.
-	"time"     // Importa o pacote time para manipular operações relacionadas a tempo, como esperas.
+	"SD/DIMEX"
+	"fmt"
+	"os"
+	"strconv"
+	"time"
 )
 
-// O processo também entra em um loop infinito, pedindo e liberando o acesso exclusivo usando o módulo DIMEX. A principal diferença é que não há operações de escrita em arquivo, e a espera inicial é de 5 segundos 
 func main() {
 
-	if len(os.Args) < 2 { // Verifica se o número de argumentos de linha de comando é menor que 2 (o que significa que falta algum argumento).
-		// Se faltar argumentos, imprime as instruções de como executar o programa corretamente.
+	if len(os.Args) < 2 {
 		fmt.Println("Please specify at least one address:port!")
 		fmt.Println("go run useDIMEX.go 0 127.0.0.1:5000  127.0.0.1:6001  127.0.0.1:7002 ")
 		fmt.Println("go run useDIMEX.go 1 127.0.0.1:5000  127.0.0.1:6001  127.0.0.1:7002 ")
@@ -33,8 +31,8 @@ func main() {
 		return
 	}
 
-	id, _ := strconv.Atoi(os.Args[1]) // Converte o segundo argumento de linha de comando para um inteiro, que representa o ID do processo.
-	addresses := os.Args[2:]          // Armazena todos os argumentos após o segundo em um slice, que são os endereços dos outros processos.
+	id, _ := strconv.Atoi(os.Args[1])
+	addresses := os.Args[2:]
 	// fmt.Print("id: ", id, "   ") fmt.Println(addresses)
 
 	var dmx *DIMEX.DIMEX_Module = DIMEX.NewDIMEX(addresses, id, true)
